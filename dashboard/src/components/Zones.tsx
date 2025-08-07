@@ -1,5 +1,6 @@
 import React from 'react';
 import Tile from './Tile';
+import { useNavigate } from 'react-router-dom';
 
 type Zone = {
   title: string;
@@ -7,6 +8,7 @@ type Zone = {
   value: string;
   colorClass: string;
   disabled?: boolean;
+  url?: string;
 };
 
 const zones: Zone[] = [
@@ -16,6 +18,7 @@ const zones: Zone[] = [
     value: '5 / 10',
     colorClass: 'bg-gradient-to-tr from-blue-300 to-blue-600',
     disabled: false,
+    url: '/zones/a1',
   },
   {
     title: 'Zone B',
@@ -34,19 +37,27 @@ const zones: Zone[] = [
 ];
 
 const Zones: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
-    <section className="px-4 py-6">
-      <h1 className="text-lg md:text-3xl font-bold mb-6 
+    <section className="px-0 py-2 mb-2" id='zones'>
+      <h1 className="text-md md:text-2xl font-bold mb-3
                      hover:drop-shadow-[0_0_8px_rgba(255,99,255,0.5)] 
                      transition-shadow duration-300 cursor-default">
         Parking Zones
       </h1>
-      <div className="flex flex-wrap gap-6 justify-left">
+      <div className="flex flex-wrap gap-3 justify-left">
         {zones.map(({ disabled, ...tile }, idx) => (
           <Tile
             key={idx}
             {...tile}
-            colorClass={disabled ? `opacity-50 cursor-not-allowed ${tile.colorClass}` : `cursor-pointer hover:scale-105 transition-transform duration-300 ${tile.colorClass}`}
+            colorClass={`${tile.colorClass}`}
+            onClick={() => {
+              if (!disabled && tile.url) {
+                navigate(tile.url);
+              }
+            }}
+            disabled={disabled}
           />
         ))}
       </div>

@@ -16,7 +16,7 @@ const ParkingInfo: React.FC<ParkingInfoProps> = ({ info }: { info: InfoItem[] })
   return (
     <div>
         <h1 className='w-full mr-auto text-lg md:text-2xl font-bold  hover:drop-shadow-[0_0_5px_4px_rgba(255,99,255,0.3)]'> Parking </h1>
-        <div className="flex flex-wrap gap-6 justify-left px-0 py-6">
+        <div className="flex flex-wrap gap-3 justify-left px-0 py-2">
         
         {info.map((tile, idx) => (
             <Tile

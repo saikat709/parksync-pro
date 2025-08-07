@@ -5,7 +5,7 @@ import {
   Tooltip, ResponsiveContainer, Label
 } from 'recharts';
 
-const SLOT_COLORS = ['#4ade80', '#f87171']; // green, red
+const SLOT_COLORS = [ '#4ade80', '#f87171' ];
 
 const Analysis: React.FC = () => {
   // Example data for pie chart
@@ -29,19 +29,19 @@ const Analysis: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 px-0 text-white rounded-2xl shadow-2xl space-y-4 max-w-[80vw]">
+    <div className="p-3 px-0 text-white rounded-2xl shadow-2xl space-y-2 max-w-[80vw]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {/* Pie Chart */}
         <div className="bg-white/5 p-6 pr-1 rounded-xl backdrop-blur-md shadow-lg">
-          <h3 className="text-lg font-semibold mb-4">Slot Availability</h3>
-          <ResponsiveContainer width="100%" height={250}>
+          <h3 className="text-lg font-semibold mb-2">Slot Availability</h3>
+          <ResponsiveContainer width="100%" height={170}>
             <PieChart>
               <Pie
                 data={slotData}
                 cx="50%"
                 cy="50%"
                 innerRadius={0}
-                outerRadius={100}
+                outerRadius={80}
                 dataKey="value"
                 animationDuration={800}
               >
@@ -60,7 +60,7 @@ const Analysis: React.FC = () => {
         {/* Bar Chart */}
         <div className="bg-white/5 p-6 rounded-xl backdrop-blur-md shadow-lg">
           <h3 className="text-lg font-semibold mb-4">Cars per Day</h3>
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={170}>
             <BarChart data={carData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff22" />
               <XAxis dataKey="date" stroke="#fff">
