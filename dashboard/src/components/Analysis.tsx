@@ -1,7 +1,8 @@
 import React from 'react';
 import {
   PieChart, Pie, Cell, Tooltip as PieTooltip,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer, Label
 } from 'recharts';
 
 const SLOT_COLORS = ['#4ade80', '#f87171']; // green, red
@@ -19,16 +20,16 @@ const Analysis: React.FC = () => {
 
   // Example data for bar chart
   const carData = [
-    { date: 'Aug 1', cars: 12 },
-    { date: 'Aug 2', cars: 18 },
-    { date: 'Aug 3', cars: 9 },
-    { date: 'Aug 4', cars: 22 },
-    { date: 'Aug 5', cars: 15 },
-    { date: 'Aug 6', cars: 10 },
+    { date: '1/7', cars: 12 },
+    { date: '2/7', cars: 18 },
+    { date: '3/7', cars: 9 },
+    { date: '4/7', cars: 22 },
+    { date: '5/7', cars: 15 },
+    { date: '6/7', cars: 10 },
   ];
 
   return (
-    <div className="p-6 text-white rounded-2xl shadow-2xl space-y-4 w-[70vw]">
+    <div className="p-6 px-0 text-white rounded-2xl shadow-2xl space-y-4 max-w-[80vw]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {/* Pie Chart */}
         <div className="bg-white/5 p-6 pr-1 rounded-xl backdrop-blur-md shadow-lg">
@@ -62,7 +63,9 @@ const Analysis: React.FC = () => {
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={carData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff22" />
-              <XAxis dataKey="date" stroke="#fff" />
+              <XAxis dataKey="date" stroke="#fff">
+                <Label value="Date" offset={-5} position="insideBottom" fill="#ff4" />
+              </XAxis>
               <YAxis stroke="#fff" />
               <Tooltip />
               <Bar dataKey="cars" fill="#60a5fa" radius={[4, 4, 0, 0]} animationDuration={1000} />

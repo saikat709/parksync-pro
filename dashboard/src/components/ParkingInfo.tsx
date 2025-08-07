@@ -1,42 +1,22 @@
 import React from 'react';
+import Tile from './Tile';
 
 type InfoItem = {
-  label: string;
+  title: string;
   value: string | number;
   description?: string;
+  colorClass: string; 
 };
 
 type ParkingInfoProps = {
   info: InfoItem[];
 };
 
-
-type TileProps = {
-  title: string;
-  value: string | number;
-  description?: string;
-  colorClass: string; // Tailwind bg color class
-};
-
-const Tile: React.FC<TileProps> = ({ title, value, description, colorClass }) => {
-  return (
-    <div
-      className={`flex flex-col p-6 rounded-xl shadow-lg text-white w-48
-                  ${colorClass} hover:scale-105 transition-transform duration-300`}
-    >
-      <span className="text-4xl font-extrabold">{value}</span>
-      <span className="mt-2 font-semibold">{title}</span>
-      {description && <span className="mt-1 text-sm opacity-80">{description}</span>}
-    </div>
-  );
-};
-
-
-const ParkingInfo: React.FC<ParkingInfoProps> = ({ info }) => {
+const ParkingInfo: React.FC<ParkingInfoProps> = ({ info }: { info: InfoItem[] }) => {
   return (
     <div>
-        <h1 className='text-lg md:text-2xl font-bold  hover:drop-shadow-[0_0_5px_4px_rgba(255,99,255,0.3)]'> Parking </h1>
-        <div className="flex flex-wrap gap-6 justify-center px-0 py-6">
+        <h1 className='w-full mr-auto text-lg md:text-2xl font-bold  hover:drop-shadow-[0_0_5px_4px_rgba(255,99,255,0.3)]'> Parking </h1>
+        <div className="flex flex-wrap gap-6 justify-left px-0 py-6">
         
         {info.map((tile, idx) => (
             <Tile
