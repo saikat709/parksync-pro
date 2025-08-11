@@ -2,12 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func
-from app.models.item import Item
 from app.models.log import Log
 from app.models.zone import Zone
+from app.models.parking import Parking
 from app.db.session import get_session
 from pydantic import BaseModel
-from datetime import datetime
 
 router = APIRouter()
 
@@ -31,13 +30,16 @@ async def get_zone(
     if not zone:
         raise HTTPException(status_code=404, detail="Zone not found")
     
+    available_slots = sum(1 for slot in zone.boolean_list if not slot)
+    
     return {
         "id": zone.id,
         "zone_id": zone.zone_id,
         "name": zone.name,
         "total_slots": zone.total_slots,
-        "boolean_list": zone.boolean_list,
-        "occupancy_rate": round((zone.total_slots - zone.available_slots) / zone.total_slots * 100, 2) if zone.total_slots > 0 else 0
+        "slots": zone.boolean_list,
+        "fare": zone.fare,
+        "occupancy_rate": round((zone.total_slots - available_slots) / zone.total_slots * 100, 2) if zone.total_slots > 0 else 0
     }
 
 @router.post("/zone/")
@@ -64,7 +66,8 @@ async def create_zone(
             "zone_id": zone.zone_id,
             "name": zone.name,
             "total_slots": zone.total_slots,
-            "boolean_list": zone.boolean_list
+            "boolean_list": zone.boolean_list,
+            "fare": zone.fare
         }
     }
 
@@ -82,6 +85,28 @@ async def list_zones(
             "zone_id": zone.zone_id,
             "name": zone.name,
             "total_slots": zone.total_slots,
-            "boolean_list": zone.boolean_list
+            "boolean_list": zone.boolean_list,
+            "fare": zone.fare
         } for zone in zones
     ]
+
+
+@router.put("/bar-data/")
+def get_bar_chart_data(
+    session: AsyncSession = Depends(get_session)
+):
+    result = session.execute(
+        select(
+            Zone.zone_id,
+            func.count(Parking.id).label("count")
+        )
+        .join(Parking, Parking.zone_id == Zone.zone_id)
+        .group_by(Zone.zone_id)
+    )
+    
+    data = result.all()
+    
+    return {
+        "labels": [row[0] for row in data],
+        "data": [row[1] for row in data]
+    }

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import func, and_
+from sqlalchemy.orm import selectinload
 from app.models.item import Item
 from app.models.log import Log
 from app.models.parking import Parking
@@ -11,16 +12,22 @@ from pydantic import BaseModel
 from datetime import datetime
 import math
 
+from app.libs.connection_manager import connection_manager
+
 router = APIRouter()
 
 class LogCreateRequest(BaseModel):
     type: str
     zone: str
-    slot: str
-    
+    slot: int
+
 
 @router.get("/")
 async def root():
+    
+    connection_manager.broadcast({"message": "Welcome to the Parking Sync API!"})
+    print("Root endpoint hit. Web Socket event triggered.")
+
     return {"message": "My FastAPI application is running!"}
 
 # @router.get("/esp32-test")
@@ -79,11 +86,10 @@ async def get_logs(
     }
 
 
-
 @router.post("/parking/start/")
 async def start_parking(
     zone_id: str,
-    slot: str,
+    slot: int,
     session: AsyncSession = Depends(get_session)
 ):
     try:
@@ -106,41 +112,35 @@ async def start_parking(
         if zone.boolean_list[slot_index]:
             raise HTTPException(status_code=400, detail="Slot is already occupied")
         
-        active_parking_result = await session.execute(
-            select(Parking).where(
-                and_(
-                    Parking.zone_id == zone_id,
-                    Parking.slot == slot,
-                    Parking.time.is_(None)  # No end time means active session
-                )
-            )
+        max_parking_id_result = await session.execute(
+            select(func.max(Parking.parking_id))
         )
-        active_parking = active_parking_result.scalar_one_or_none()
+        max_parking_id = max_parking_id_result.scalar()
+        next_parking_id = max(10001, (max_parking_id or 0) + 1)
         
-        if active_parking:
-            raise HTTPException(status_code=400, detail="Active parking session already exists for this slot")
-        
-        # Create new parking record
         new_parking = Parking(
+            parking_id=next_parking_id,
             zone_id=zone_id,
             slot=slot,
             starting_time=datetime.now()
         )
         session.add(new_parking)
+        await session.flush() 
+
+        bl = zone.boolean_list.copy()
+        bl[slot_index] = True
+        zone.boolean_list = bl
         
-        # Update zone slot availability
-        zone.boolean_list[slot_index] = True
-        
-        # Create log entry
         new_log = Log(
-            type="start",
+            type="park",
             zone=zone_id,
             slot=slot,
         )
+
         session.add(new_log)
-        
         await session.commit()
         await session.refresh(new_parking)
+        await session.refresh(zone)
         
         return {
             "message": "Parking started successfully",
@@ -155,76 +155,60 @@ async def start_parking(
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
 
 @router.post("/parking/end/")
 async def end_parking(
-    zone_id: str,
-    slot: str,
+    parking_id: int,
     session: AsyncSession = Depends(get_session)
 ):
-    try:
-        zone_result = await session.execute(
-            select(Zone).where(Zone.zone_id == zone_id)
-        )
-        zone = zone_result.scalar_one_or_none()        
-        
-        if not zone: raise HTTPException(status_code=404, detail="Zone not found")
 
-        try:
-            slot_index = int(slot) - 1 
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid slot number")
-        
-        if slot_index < 0 or slot_index >= len(zone.boolean_list):
-            raise HTTPException(status_code=400, detail="Slot number out of range")
-        
-        active_parking_result = await session.execute(
-            select(Parking).where(
-                and_(
-                    Parking.zone_id == zone_id,
-                    Parking.slot == slot,
-                    Parking.time.is_(None)
-                )
+    active_parking_result = await session.execute(
+        select(Parking)
+        .options(selectinload(Parking.zone))
+        .where(
+            and_(
+                Parking.parking_id == parking_id,
+                Parking.time.is_(None)
             )
         )
-        active_parking = active_parking_result.scalar_one_or_none()
-        
-        if not active_parking:
-            raise HTTPException(status_code=404, detail="No active parking session found for this slot")
-        
-        end_time = datetime.now()
-        active_parking.time = end_time
-        
-        duration = end_time - active_parking.starting_time
-        duration_minutes = int(duration.total_seconds() / 60)
-        
-        try:
-            fare_rate = zone.fare if hasattr(zone, 'fare') and zone.fare else 10
-        except AttributeError:
-            fare_rate = 10
-        
-        total_fare = max(fare_rate, int(duration_minutes * (fare_rate / 60)))
-        
+    )
+    active_parkings = active_parking_result.scalars().all()
+    if not active_parkings:
+        raise HTTPException(status_code=404, detail="No active parking session found for this slot")
+    active_parking = active_parkings[0] 
+    
+    if not active_parking:
+        raise HTTPException(status_code=404, detail="No active parking session found for this slot")
+    zone = active_parking.zone
+
+    end_time = datetime.now()
+    active_parking.time = end_time
+    duration_minutes = int((end_time - active_parking.starting_time).total_seconds() / 60)
+    fare_rate = getattr(zone, "fare", 10) or 10
+    total_fare = fare_rate*duration_minutes/60 # max(fare_rate, int(duration_minutes * (fare_rate / 60)))
+
+    # Update the slot status (slots are 1-indexed, so subtract 1 for array access)
+    slot_index = active_parking.slot - 1
+    if 0 <= slot_index < len(zone.boolean_list):
         zone.boolean_list[slot_index] = False
-        
-        new_log = Log(
-            type="end",
-            zone=zone_id,
-            slot=slot,
-        )
-        session.add(new_log)
-        
+
+    new_log = Log(
+        type="moved",
+        zone=active_parking.zone_id,  # Use zone_id instead of zone.name
+        slot=active_parking.slot
+    )
+    session.add(new_log)
+
+    try:
         await session.commit()
-        
-        return {
-            "zone_id": zone_id,
-            "slot": slot,
-            "duration_minutes": duration_minutes,
-            "fare": total_fare
-        }
-        
-    except HTTPException:
-        raise
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+    return {
+        "zone_id": active_parking.zone_id,
+        "slot": active_parking.slot,
+        "duration_minutes": duration_minutes,
+        "fare": total_fare
+    }
