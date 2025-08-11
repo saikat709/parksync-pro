@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, JSON
 from sqlalchemy.orm import relationship
 from app.models.base import Base
+from sqlalchemy.ext.mutable import MutableList
 
 class Zone(Base):
     __tablename__ = "zones"
@@ -9,7 +10,7 @@ class Zone(Base):
     zone_id = Column(String, unique=True, nullable=False)
     name = Column(String, index=True)
     total_slots = Column(Integer, default=0, nullable=False)
-    boolean_list = Column(JSON, nullable=False)
+    boolean_list = Column(MutableList.as_mutable(JSON), nullable=False)
     fare = Column(Integer, default=10, nullable=False)
     
     parking_records = relationship("Parking", back_populates="zone")

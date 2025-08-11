@@ -184,8 +184,10 @@ async def end_parking(
         )
     )
     active_parkings = active_parking_result.scalars().all()
-    # if not active_parkings:
-    #     raise HTTPException(status_code=404, detail="No active parking session found for this slot")
+
+    if not active_parkings:
+        raise HTTPException(status_code=404, detail="No active parking session found for this slot")
+    
     active_parking = active_parkings[0] 
     
     if not active_parking:
@@ -198,7 +200,8 @@ async def end_parking(
     active_parking.time = end_time
     duration_minutes = int((end_time - active_parking.starting_time).total_seconds() / 60)
     fare_rate = getattr(zone, "fare", 10) or 10
-    total_fare = fare_rate*duration_minutes/60 # max(fare_rate, int(duration_minutes * (fare_rate / 60)))
+    # ! or max(fare_rate, int(duration_minutes * (fare_rate / 60)))
+    total_fare = fare_rate*duration_minutes/60 
 
 
     slot_index = active_parking.slot - 1
@@ -214,9 +217,10 @@ async def end_parking(
 
     try:
         session.add(new_log)
+        session.add(zone)
+        await session.commit()
         await session.refresh(zone)
         await session.refresh(active_parking)
-        await session.commit()
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
