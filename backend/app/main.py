@@ -3,6 +3,10 @@ from app.api import routes, zone_routes
 from app.models.item import Base
 from app.db.session import engine
 from fastapi.middleware.cors import CORSMiddleware
+from app.libs.socket import socket_route    
+from app.libs.connection_manager import connection_manager
+from fastapi import WebSocket
+import json
 
 app = FastAPI()
 
@@ -22,6 +26,7 @@ app.add_middleware(
 
 app.include_router(routes.router)
 app.include_router(zone_routes.router)
+app.include_router(socket_route)
 
 @app.on_event("startup")
 async def startup():

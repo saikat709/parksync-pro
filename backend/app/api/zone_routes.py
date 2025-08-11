@@ -28,7 +28,7 @@ async def get_zone(
     zone = result.scalar_one_or_none()
     
     if not zone:
-        raise HTTPException(status_code=404, detail="Zone not found")
+        raise HTTPException(status_code=404, detail="Zone not found. Maybe not created yet?")
     
     available_slots = sum(1 for slot in zone.boolean_list if not slot)
     

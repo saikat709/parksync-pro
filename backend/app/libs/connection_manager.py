@@ -5,18 +5,18 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
+    def add(self, websocket: WebSocket):
         self.active_connections.append(websocket)
+        print(len(self.active_connections), "active connections")
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, message: dict, websocket: WebSocket):
-        await websocket.send_json(message)
-
-    async def broadcast(self, message: dict):
+    async def broadcast(self, event: str, data: dict):
         for connection in self.active_connections:
-            await connection.send_json(message)
+            try:
+                await connection.send_json({"event": event, "data": data})
+            except Exception as e:
+                print(f"Error sending message to {connection}: {e}")
 
 connection_manager = ConnectionManager()

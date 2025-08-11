@@ -25,10 +25,13 @@ class LogCreateRequest(BaseModel):
 @router.get("/")
 async def root():
     
-    connection_manager.broadcast({"message": "Welcome to the Parking Sync API!"})
-    print("Root endpoint hit. Web Socket event triggered.")
+    await connection_manager.broadcast( "test", {
+        "message": "WebSocket event triggered from root endpoint"
+    })
+    print("\nRoot endpoint hit. Web Socket event triggered.")
+    print(connection_manager.active_connections, "active connections\n")
 
-    return {"message": "My FastAPI application is running!"}
+    return { "message": "My FastAPI application is running!" }
 
 # @router.get("/esp32-test")
 # def esp32_test():
@@ -130,6 +133,7 @@ async def start_parking(
         bl = zone.boolean_list.copy()
         bl[slot_index] = True
         zone.boolean_list = bl
+        print(zone.boolean_list, "boolean list updated\n\n\n")
         
         new_log = Log(
             type="park",
@@ -141,6 +145,12 @@ async def start_parking(
         await session.commit()
         await session.refresh(new_parking)
         await session.refresh(zone)
+
+        print(f"\nparking-{zone.zone_id} has been broadcasted with slot {new_parking.slot} and status 1")
+        await connection_manager.broadcast("parking-" + zone.zone_id, {
+            "slot": new_parking.slot,
+            "status": 1
+        })
         
         return {
             "message": "Parking started successfully",
@@ -148,7 +158,7 @@ async def start_parking(
             "zone_id": zone_id,
             "slot": slot,
             "starting_time": new_parking.starting_time
-        }
+        }    
         
     except HTTPException:
         raise
@@ -169,17 +179,19 @@ async def end_parking(
         .where(
             and_(
                 Parking.parking_id == parking_id,
-                Parking.time.is_(None)
+                # Parking.time.is_(None)
             )
         )
     )
     active_parkings = active_parking_result.scalars().all()
-    if not active_parkings:
-        raise HTTPException(status_code=404, detail="No active parking session found for this slot")
+    # if not active_parkings:
+    #     raise HTTPException(status_code=404, detail="No active parking session found for this slot")
     active_parking = active_parkings[0] 
     
     if not active_parking:
         raise HTTPException(status_code=404, detail="No active parking session found for this slot")
+    
+    
     zone = active_parking.zone
 
     end_time = datetime.now()
@@ -188,27 +200,59 @@ async def end_parking(
     fare_rate = getattr(zone, "fare", 10) or 10
     total_fare = fare_rate*duration_minutes/60 # max(fare_rate, int(duration_minutes * (fare_rate / 60)))
 
-    # Update the slot status (slots are 1-indexed, so subtract 1 for array access)
+
     slot_index = active_parking.slot - 1
-    if 0 <= slot_index < len(zone.boolean_list):
-        zone.boolean_list[slot_index] = False
+    zone.boolean_list[slot_index] = False
+    print(zone.boolean_list, "boolean list updated\n\n\n")
+
 
     new_log = Log(
         type="moved",
-        zone=active_parking.zone_id,  # Use zone_id instead of zone.name
+        zone=active_parking.zone_id,
         slot=active_parking.slot
     )
-    session.add(new_log)
 
     try:
+        session.add(new_log)
+        await session.refresh(zone)
+        await session.refresh(active_parking)
         await session.commit()
     except Exception as e:
         await session.rollback()
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    
+    print(f"\nparking-{zone.zone_id} has been broadcasted with slot {active_parking.slot} and status 0")
+    await connection_manager.broadcast(f"parking-{zone.zone_id}", {
+        "slot": active_parking.slot,
+        "status": 0
+    })
 
     return {
         "zone_id": active_parking.zone_id,
         "slot": active_parking.slot,
         "duration_minutes": duration_minutes,
         "fare": total_fare
+    }
+
+
+
+@router.get("/parkings/")
+async def get_parkings(session: AsyncSession = Depends(get_session)):
+    result = await session.execute(
+        select(Parking)
+        .options(selectinload(Parking.zone))
+        .order_by(Parking.starting_time.desc())
+    )
+    parkings = result.scalars().all()
+    
+    return {
+        "parkings": [
+            {
+                "parking_id": p.parking_id,
+                "zone_id": p.zone.zone_id,
+                "slot": p.slot,
+                "starting_time": p.starting_time,
+                "ending_time": p.time
+            } for p in parkings
+        ]
     }

@@ -1,14 +1,18 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from app.libs.connection_manager import connection_manager
+import json
+from fastapi import APIRouter
 
-from app.main import app
+socket_route = APIRouter()
 
-@app.websocket("/ws")
+@socket_route.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await connection_manager.connect(websocket)
+    await websocket.accept()
+    connection_manager.add(websocket)
+    print("\n\nWebSocket connection established\n\n")
     try:
         while True:
-            data = await websocket.receive_text()
-            # To Handle incoming messages
+            await websocket.receive_text()
+            # No need incoming data
     except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
+        connection_manager.remove(websocket)
