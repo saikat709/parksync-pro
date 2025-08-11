@@ -7,29 +7,30 @@ import type { WSMessage, WebSocketProviderProps } from "../libs/HookTypes";
 
 
 export const WebSocketProvider = ({
-  url = "ws://your-fastapi-server-ip:8000/ws",
+  url = "ws://localhost:8000/ws",
   children,
 }: WebSocketProviderProps) => {
   const ws = useRef<WebSocket | null>(null);
-  const messageHandler = useRef<((msg: WSMessage) => void) | null>(null);
+  const messageHandlers = useRef<Array<((msg: WSMessage) => void)>>([]);
 
   useEffect(() => {
     if (!ws.current) {
       ws.current = new WebSocket(url);
 
       ws.current.onopen = () => {
-        console.log("WebSocket connected");
+        console.log("WebSocket connected to server:", url);
       };
 
       ws.current.onmessage = (event: MessageEvent) => {
-        if (messageHandler.current) {
+        console.log("WebSocketContext onMessage:", event.data);
           try {
             const parsed: WSMessage = JSON.parse(event.data);
-            messageHandler.current(parsed);
+            messageHandlers.current.forEach(handler => {
+              handler({ event: parsed.event, data: parsed.data });
+            });
           } catch (e) {
             console.error("Invalid JSON:", e);
           }
-        }
       };
 
       ws.current.onerror = (error: Event) => {
@@ -47,8 +48,14 @@ export const WebSocketProvider = ({
     };
   }, [url]);
 
-  const onMessage = (callback: (msg: WSMessage) => void) => {
-    messageHandler.current = callback;
+  const onMessage = (callback: ( {event, data } : WSMessage) => void) => {
+    messageHandlers.current.push(callback);
+    console.log("WebSocket message handler set.");
+  };
+
+  const removeHandler = (callback: ( {event, data } : WSMessage) => void) => {
+    messageHandlers.current = messageHandlers.current.filter(h => h !== callback);
+    console.log("WebSocket message handler removed.");
   };
 
   const sendMessage = (msg: unknown) => {
@@ -60,7 +67,7 @@ export const WebSocketProvider = ({
   };
 
   return (
-    <WebSocketContext.Provider value={{ onMessage, sendMessage }}>
+    <WebSocketContext.Provider value={{ onMessage, sendMessage, removeHandler }}>
       {children}
     </WebSocketContext.Provider>
   );

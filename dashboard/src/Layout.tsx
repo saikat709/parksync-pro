@@ -1,8 +1,25 @@
 import { Outlet } from "react-router-dom";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import { useEffect } from "react";
+import useWebSocket from "./hooks/useWebSocket";
+import type { SocketTestData, WSMessage } from "./libs/HookTypes";
+import PersonalParking from "./components/PersonalParking";
 
 const Layout = () => {
+    const { onMessage, removeHandler } = useWebSocket();
+
+    useEffect(() => {
+        const handler = ( {event, data}: WSMessage ) => {
+            if (event === "test") {
+                const testData: SocketTestData = data as SocketTestData;
+                console.log("Message received in RootLayout:", testData.message);
+            }
+        };
+        onMessage(handler);
+        return () => removeHandler(handler);
+    }, [onMessage, removeHandler]);
+    
     return (
         <>
         <div
@@ -13,6 +30,7 @@ const Layout = () => {
             <div className="mx-auto w-[80vw]">
                 <Outlet />
             </div>
+            <PersonalParking />
             <Footer />
         </div>
         </>

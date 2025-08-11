@@ -8,29 +8,55 @@ import axios from 'axios';
 import React, { useEffect } from 'react';
 import type { ZoneInfoType } from '../libs/ApiTypes';
 import SlotTile from '../components/SlotTile';
-
-const validZones = {
-    "a1": "Mokarrom Dhaban",
-}
+import type { SocketParkingStatus, WSMessage } from '../libs/HookTypes';
+import useWebSocket from '../hooks/useWebSocket';
+import { validZones } from '../libs/constValues';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const ZoneScreen: React.FC = () => {
     const { zoneId } = useParams<{ zoneId: string }>();
     const [ zoneInfo, setZoneInfo] = React.useState<ZoneInfoType | null>(null);
+    const { onMessage, removeHandler } = useWebSocket();
 
     useEffect(()=> {
         const fetchZoneInfo = async () => {
             try {
                 const response = await axios.get(`${apiUrl}/zone/${zoneId}`);
                 setZoneInfo(response.data);
-                console.log("Zone Info:", response.data);
+                console.log("Slots", response.data.slots);
             } catch (error) {
                 console.error("Error fetching zone info:", error);
             }
         };
         fetchZoneInfo();
     }, [zoneId] );
+
+
+    useEffect(() => {
+         const handler = ( {event, data}: WSMessage ) => {
+            if (event === "parking-" + zoneId) {
+                const parkingData = data as SocketParkingStatus;
+                console.log("Parking Data Received:", parkingData);
+                setZoneInfo(prev => {
+                    if (prev) {
+                        const updatedSlots = [...prev.slots];
+                        // console.log(updatedSlots)
+                        updatedSlots[parkingData.slot - 1] = parkingData.status;
+                        // console.log("Updated Slots:", updatedSlots);
+                        return { 
+                            ...prev, 
+                            slots: updatedSlots 
+                        };
+                    }
+                    return prev;
+                });
+            }};
+        console.log("Added onMessage inside zoneScreen.");
+        onMessage(handler);
+
+        return () => removeHandler(handler);
+    }, [zoneId, onMessage, removeHandler]);
 
     if ( !zoneId || !Object.keys(validZones).includes(zoneId) ) {
         return <Page404 />;
@@ -58,7 +84,7 @@ const ZoneScreen: React.FC = () => {
                     <SlotTile key={index}
                         slotName={`S00${index + 1}`}
                         isOccupied={slot} 
-                        />
+                    />
                 )) }
             </div>
             <ZoneInfo {...zoneInfo}/>

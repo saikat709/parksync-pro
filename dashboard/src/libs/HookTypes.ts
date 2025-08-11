@@ -1,13 +1,14 @@
 import type { ReactNode } from "react";
 
 interface WSMessage {
-  type: string;
+  event: string;
   data: unknown;
 };
 
 interface WebSocketContextType {
   onMessage: (callback: (msg: WSMessage) => void) => void;
   sendMessage: (msg: unknown) => void;
+  removeHandler: (callback: (msg: WSMessage) => void) => void;
 };
 
 interface WebSocketProviderProps {
@@ -15,4 +16,19 @@ interface WebSocketProviderProps {
   children: ReactNode;
 };
 
-export type { WSMessage, WebSocketContextType, WebSocketProviderProps };
+interface SocketTestData {
+  message: string;
+}
+
+interface SocketParkingStatus {
+  slot: number;
+  status: boolean;
+}
+
+export type { 
+  WSMessage, 
+  WebSocketContextType, 
+  WebSocketProviderProps, 
+  SocketTestData, 
+  SocketParkingStatus 
+};
