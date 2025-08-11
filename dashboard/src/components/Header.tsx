@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import Modal from './Modal';
+import EnterForm from './EnterForm';
 
 type HeaderProps = {
   title: string;
@@ -12,7 +14,8 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   
   const location = useLocation();
-  const pathname = location.pathname;
+  const [isOpen, setIsOpen] = React.useState(false);
+  
   useEffect(() => {
     if (location.hash) {
         const element = document.getElementById(location.hash.substring(1)); // Remove '#'
@@ -23,6 +26,7 @@ const Header: React.FC<HeaderProps> = ({
   }, [location]);
   
   return (
+    <>
     <header
         className="mt-6 w-[100%] max-w-4xl px-8 py-3 rounded-full 
             bg-white/10 backdrop-blur-md shadow-md border border-white/20 
@@ -49,8 +53,23 @@ const Header: React.FC<HeaderProps> = ({
             {item}
           </Link>
         ))}
+        <button
+          className="bg-blue-300 px-5 text-black font-bold text-md px-3 py-3 rounded-full transition transition-all duration-300 hover:scale-110 hover:bg-white hover:text-black"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          Enter
+        </button>
       </nav>
+
     </header>
+
+     { isOpen && (
+        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+          <EnterForm onClose={()=>setIsOpen(false)}/>
+        </Modal>
+        )
+      }
+    </>
   );
 };
 

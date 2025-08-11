@@ -3,7 +3,7 @@ import Right from "../assets/Right.svg";
 import Modal from "./Modal";
 
 const PersonalParking = () => {
-    const [ isOpen, setIsOpen ] = React.useState(true);
+    const [ isOpen, setIsOpen ] = React.useState(false);
     const [ duration, setDuration ] = React.useState(10);
 
     useEffect(() => {
