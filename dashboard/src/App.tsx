@@ -6,6 +6,8 @@ import Page404    from "./pages/Page404";
 import LogsScreen from "./pages/LogsScreen";
 import ZoneScreen from "./pages/ZoneScreen";
 
+import { WebSocketProvider } from "./hooks/WebSocketContext";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -44,9 +46,16 @@ const router = createBrowserRouter([
   },
 ]);
 
-function App() {
 
-  return ( <RouterProvider router={router} /> );
+const apiUrl = import.meta.env.VITE_API_URL;
+const wsUrl = "ws://127.0.0.1:8000/ws";
+
+function App() {
+  return (
+    <WebSocketProvider url={wsUrl}>
+      <RouterProvider router={router} /> 
+    </WebSocketProvider>
+  );
 }
 
 export default App

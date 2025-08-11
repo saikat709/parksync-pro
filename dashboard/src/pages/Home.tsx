@@ -2,10 +2,16 @@ import Analysis from "../components/Analysis";
 import LogsList from "../components/LogList";
 import ParkingInfo from "../components/ParkingInfo";
 import Zones from "../components/Zones";
-
+import useWebSocket from "../hooks/useWebSocket";
 
 
 const Home = () => {
+    const { onMessage } = useWebSocket();
+
+    onMessage((msg ) => {
+        console.log("Received message:", msg);
+    });
+    
     return (
         <div className="flex-1 w-[100%]">
             <Analysis />
