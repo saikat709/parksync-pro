@@ -1,9 +1,12 @@
+import LogsList from "../components/LogList";
+import PaginationOption from "../components/PaginationOption";
+
 const LogsScreen: React.FC = () => {
     return (
-        <div className="flex flex-col items-center justify-center text-white">
-            <h1 className="text-3xl font-bold mb-6">Logs</h1>
-            <p className="text-lg mb-4">This page is under construction.</p>
-            <p className="text-sm text-gray-400">Please check back later for updates.</p>
+        <div className="w-[80%] mx-auto flex flex-col gap-4 items-center justify-center text-white">
+            <h1 className="text-3xl font-bold mb-3">Parking Logs</h1>
+            <LogsList />
+            <PaginationOption className="mt-5"/>
         </div>
     );
 }

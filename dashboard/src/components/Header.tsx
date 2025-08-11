@@ -38,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({
       </h1>
       <nav className="flex gap-4">
 
-        { ( pathname === '/' || pathname === '/home' ) && <Link to={'/#zones'} className="text-white text-md px-3 py-3 rounded-full transition transition-all duration-300 hover:scale-110 hover:bg-white hover:text-black">Zones</Link> }
+        {/* { ( pathname === '/' || pathname === '/home' ) && <Link to={'/#zones'} className="text-white text-md px-3 py-3 rounded-full transition transition-all duration-300 hover:scale-110 hover:bg-white hover:text-black">Zones</Link> } */}
 
         {menuItems.map((item, index) => (
           <Link
