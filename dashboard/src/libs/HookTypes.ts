@@ -25,10 +25,31 @@ interface SocketParkingStatus {
   status: boolean;
 }
 
+interface ParkingInfoType {
+  zone_id?: string;
+  slot: number;
+  start_time: string;
+  zone: string,
+  fare_rate?: number;
+}
+
+
+interface AuthContextType {
+  login: (parkingId: number) => void;
+  logout?: () => void;
+  onError?: (callback: (msg: string) => void) => void;
+  isLoggedIn?: boolean;
+  isLoading?: boolean;
+  parking: ParkingInfoType | null;
+}
+
+
 export type { 
   WSMessage, 
   WebSocketContextType, 
   WebSocketProviderProps, 
   SocketTestData, 
-  SocketParkingStatus 
+  SocketParkingStatus,
+  AuthContextType,
+  ParkingInfoType
 };

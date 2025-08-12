@@ -1,11 +1,10 @@
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import LogsList from "../components/LogList";
 import PaginationOption from "../components/PaginationOption";
 import React, { useEffect } from "react";
 import LoadingComp from "../components/LoadingComp";
 import type { LogItem } from "../libs/ApiTypes";
 import axios from "axios";
-
 
 const getPaginationRange = (current: number, total: number) => {
     const visible = 5;

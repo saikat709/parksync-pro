@@ -5,7 +5,7 @@ import { typeColors } from '../libs/constValues';
 
 const LogsList: React.FC<LogsListProps> = ({ hasMore, zone_id, logs }: LogsListProps) => {
   
-  console.log("LogList Zone ID:", zone_id);
+  // console.log("LogList Zone ID:", zone_id);
 
   return (
     <div className="w-full overflow-x-scroll border-2 border-blue-400 flex-1 p-4 bg-white/10 backdrop-blur-md rounded-lg shadow-md text-white">

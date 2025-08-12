@@ -41,7 +41,7 @@ const PaginationOption: React.FC<PaginationOptionProps> = (
                 className={getButtonClass(hasNext || false)}
                 disabled={!hasNext}
                 onClick={() => {
-                    console.log("Next button clicked, current page:", currentPage);
+                    // console.log("Next button clicked, current page:", currentPage);
                     if (onPageChange) onPageChange( (currentPage || 0) + 1)
                 }}
                 >

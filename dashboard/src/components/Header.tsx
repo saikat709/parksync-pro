@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Modal from './Modal';
 import EnterForm from './EnterForm';
+import useAuth from '../hooks/useAuth';
+import LoadingComp from './LoadingComp';
 
 type HeaderProps = {
   title: string;
@@ -15,6 +17,7 @@ const Header: React.FC<HeaderProps> = ({
   
   const location = useLocation();
   const [isOpen, setIsOpen] = React.useState(false);
+  const { isLoggedIn, login, logout, isLoading } = useAuth();
   
   useEffect(() => {
     if (location.hash) {
@@ -24,6 +27,24 @@ const Header: React.FC<HeaderProps> = ({
         }
     }
   }, [location]);
+
+
+  console.log(isLoggedIn, isLoading);
+
+
+  const modal = (
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+         { isLoading && <LoadingComp shortened/> }
+
+         { !isLoading && <EnterForm 
+            onSubmit={(parkingId: number)=>{
+              login(parkingId);
+            }} 
+              onClose={()=>{}}
+            />
+          }
+      </Modal>
+  );
   
   return (
     <>
@@ -53,22 +74,24 @@ const Header: React.FC<HeaderProps> = ({
             {item}
           </Link>
         ))}
+        
+        
         <button
           className="bg-blue-300 px-5 text-black font-bold text-md px-3 py-3 rounded-full transition transition-all duration-300 hover:scale-110 hover:bg-white hover:text-black"
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => {
+            if (isLoading) return;
+            if ( isLoggedIn ) logout();
+            else setIsOpen(!isOpen)
+          }}
         >
-          Enter
+         { isLoggedIn ? "Logout" : "Enter" }
+
         </button>
       </nav>
 
     </header>
 
-     { isOpen && (
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          <EnterForm onClose={()=>setIsOpen(false)}/>
-        </Modal>
-        )
-      }
+     { isOpen && modal }
     </>
   );
 };

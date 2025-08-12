@@ -5,9 +5,11 @@ import { useEffect } from "react";
 import useWebSocket from "./hooks/useWebSocket";
 import type { SocketTestData, WSMessage } from "./libs/HookTypes";
 import PersonalParking from "./components/PersonalParking";
+import useAuth from "./hooks/useAuth";
 
 const Layout = () => {
     const { onMessage, removeHandler } = useWebSocket();
+    const { isLoggedIn } = useAuth();
 
     useEffect(() => {
         const handler = ( {event, data}: WSMessage ) => {
@@ -30,7 +32,7 @@ const Layout = () => {
             <div className="mx-auto w-[80vw]">
                 <Outlet />
             </div>
-            <PersonalParking />
+           { isLoggedIn && <PersonalParking />}
             <Footer />
         </div>
         </>

@@ -32,4 +32,13 @@ type LogsListProps = {
 };
 
 
-export type { ZoneInfoType, PaginationInfoType, LogItem, LogsListProps };
+type OverallDataType = {
+  total_slots: number;
+  available_slots: number;
+  average_fare: number;
+  average_time: number;
+  zone_a1?: { total_slots: number; available_slots: number };
+}
+
+
+export type { ZoneInfoType, PaginationInfoType, LogItem, LogsListProps, OverallDataType };

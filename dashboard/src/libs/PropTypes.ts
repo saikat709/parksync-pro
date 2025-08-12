@@ -33,5 +33,10 @@ type AnalysisProps = {
     barData?: { date: string; cars: number }[];
 }
 
+type AnalysisDataType = {
+    pieData: { totalSlots: number; availableSlots: number; };
+    barData: { date: string; cars: number }[];
+}
 
-export type { ModalProps, LoadingProps, PaginationOptionProps, PieChartCompProps, AnalysisProps };
+
+export type { ModalProps, LoadingProps, PaginationOptionProps, PieChartCompProps, AnalysisProps, AnalysisDataType };

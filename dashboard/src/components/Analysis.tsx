@@ -6,17 +6,7 @@ import {
 import PieChartComp from './PieChartComp';
 import type { AnalysisProps } from '../libs/PropTypes';
 
-const Analysis: React.FC<AnalysisProps> = ({ pieData }: AnalysisProps) => {
-
-  // Example data for bar chart
-  const carData = [
-    { date: '1/7', cars: 12 },
-    { date: '2/7', cars: 18 },
-    { date: '3/7', cars: 9 },
-    { date: '4/7', cars: 22 },
-    { date: '5/7', cars: 15 },
-    { date: '6/7', cars: 10 },
-  ];
+const Analysis: React.FC<AnalysisProps> = ({ pieData, barData }: AnalysisProps) => {
 
   return (
     <div className="p-3 px-0 text-white rounded-2xl shadow-2xl space-y-2 max-w-[80vw]">
@@ -27,7 +17,7 @@ const Analysis: React.FC<AnalysisProps> = ({ pieData }: AnalysisProps) => {
           <div className="bg-white/5 p-6 rounded-xl backdrop-blur-md shadow-lg">
             <h3 className="text-lg font-semibold mb-4">Cars per Day</h3>
             <ResponsiveContainer width="100%" height={170}>
-              <BarChart data={carData}>
+              <BarChart data={barData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff22" />
                 <XAxis dataKey="date" stroke="#fff">
                   <Label value="Date" offset={-5} position="insideBottom" fill="#ff4" />

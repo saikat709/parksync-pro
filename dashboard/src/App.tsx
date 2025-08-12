@@ -7,6 +7,7 @@ import LogsScreen from "./pages/LogsScreen";
 import ZoneScreen from "./pages/ZoneScreen";
 
 import { WebSocketProvider } from "./hooks/WebSocketContext";
+import { AuthContextProvider } from "./hooks/AuthContext";
 
 const router = createBrowserRouter([
   {
@@ -46,15 +47,15 @@ const router = createBrowserRouter([
   },
 ]);
 
-
-const apiUrl = import.meta.env.VITE_API_URL;
-const wsUrl = "ws://127.0.0.1:8000/ws";
+const apiUrl = import.meta.env.VITE_SOCKET_URL
 
 function App() {
   return (
-    <WebSocketProvider url={wsUrl}>
-      <RouterProvider router={router} /> 
-    </WebSocketProvider>
+    <AuthContextProvider>
+      <WebSocketProvider url={apiUrl}>
+        <RouterProvider router={router} /> 
+      </WebSocketProvider>
+    </AuthContextProvider>
   );
 }
 

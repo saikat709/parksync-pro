@@ -21,7 +21,6 @@ class LogCreateRequest(BaseModel):
     zone: str
     slot: int
 
-
 @router.get("/")
 async def root():
     
@@ -154,11 +153,11 @@ async def start_parking(
         })
         
         return {
-            "message": "Parking started successfully",
+            # "message": "Parking started successfully",
             "parking_id": new_parking.parking_id,
-            "zone_id": zone_id,
-            "slot": slot,
-            "starting_time": new_parking.starting_time
+            # "zone_id": zone_id,
+            # "slot": slot,
+            # "starting_time": new_parking.starting_time
         }    
         
     except HTTPException:
@@ -233,9 +232,9 @@ async def end_parking(
     })
 
     return {
-        "zone_id": active_parking.zone_id,
-        "slot": active_parking.slot,
-        "duration_minutes": duration_minutes,
+        # "zone_id": active_parking.zone_id,
+        # "slot": active_parking.slot,
+        # "duration_minutes": duration_minutes,
         "fare": total_fare
     }
 
@@ -260,6 +259,30 @@ async def get_parkings(session: AsyncSession = Depends(get_session)):
                 "ending_time": p.time
             } for p in parkings
         ]
+    }
+
+
+@router.get("/parking/{parking_id}")
+async def get_parking(
+    parking_id: int,
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(
+        select(Parking)
+        .options(selectinload(Parking.zone))
+        .where(Parking.parking_id == parking_id)
+    )
+    parking = result.scalar_one_or_none()
+    
+    if not parking:
+        raise HTTPException(status_code=404, detail="Parking not found")
+    
+    return {
+        "parking_id": parking.parking_id,
+        "zone_id": parking.zone.zone_id,
+        "slot": parking.slot,
+        "starting_time": parking.starting_time,
+        "ending_time": parking.time,
     }
 
 
@@ -310,7 +333,7 @@ async def get_analysis(session: AsyncSession = Depends(get_session)):
             car_data_dict[date_str] += 1
     
     car_data = [
-        {"date": date_str, "cars": count}
+        { "date": date_str, "cars": count}
         for date_str, count in car_data_dict.items()
     ]
     
@@ -321,7 +344,56 @@ async def get_analysis(session: AsyncSession = Depends(get_session)):
             "availableSlots": available_slots,
             "totalSlots": total_slots
         },
-        "barData": {
-            "carData": car_data
-        }
+        "barData": car_data
     }
+
+
+@router.get("/overall")
+async def get_overall(session: AsyncSession = Depends(get_session)):
+    zones_result = await session.execute(select(Zone))
+    zones = zones_result.scalars().all()
+    
+    total_slots = 0
+    available_slots = 0
+    zone_data = {}
+    
+    for zone in zones:
+        zone_total = zone.total_slots
+        total_slots += zone_total
+        zone_occupied = sum(zone.boolean_list) if zone.boolean_list else 0
+        zone_available = zone_total - zone_occupied
+        
+        available_slots += zone_available
+        
+        zone_data["zone_" + zone.zone_id] = {
+            "total_slots": zone_total,
+            "available_slots": zone_available,
+        }
+    
+    total_fare = sum(zone.fare for zone in zones)
+    average_fare = total_fare / len(zones) if zones else 0
+    
+    completed_parkings_result = await session.execute(
+        select(Parking).where(Parking.time.is_not(None))
+    )
+    completed_parkings = completed_parkings_result.scalars().all()
+    
+    if completed_parkings:
+        total_duration_minutes = sum(
+            (parking.time - parking.starting_time).total_seconds() / 60
+            for parking in completed_parkings
+        )
+        average_time = total_duration_minutes / len(completed_parkings)
+    else:
+        average_time = 0
+    
+    response_data = {
+        "total_slots": total_slots,
+        "available_slots": available_slots,
+        "average_fare": round(average_fare, 2),
+        "average_time": round(average_time, 2),
+    }
+    
+    response_data.update(zone_data)
+    
+    return response_data

@@ -9,7 +9,7 @@ import type { ZoneInfoType } from "../libs/ApiTypes";
 
 const ZoneInfo: React.FC<ZoneInfoType> = ({ total_slots, slots, fare }: ZoneInfoType)=>{
 
-    console.log("Zone Info:", total_slots);
+    // console.log("Zone Info:", total_slots);
 
     return (
         <div className="w-full mx-auto border-2 border-white p-3 grid grid-cols-1 items-center justify-center md:grid-cols-2 rounded-lg">

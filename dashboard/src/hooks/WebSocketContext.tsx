@@ -9,7 +9,7 @@ import type { WSMessage, WebSocketProviderProps } from "../libs/HookTypes";
 export const WebSocketProvider = ({
   url = "ws://localhost:8000/ws",
   children,
-}: WebSocketProviderProps) => {
+}: WebSocketProviderProps ) => {
   const ws = useRef<WebSocket | null>(null);
   const messageHandlers = useRef<Array<((msg: WSMessage) => void)>>([]);
 
@@ -18,11 +18,11 @@ export const WebSocketProvider = ({
       ws.current = new WebSocket(url);
 
       ws.current.onopen = () => {
-        console.log("WebSocket connected to server:", url);
+        // console.log("WebSocket connected to server:", url);
       };
 
       ws.current.onmessage = (event: MessageEvent) => {
-        console.log("WebSocketContext onMessage:", event.data);
+        // console.log("WebSocketContext onMessage:", event.data);
           try {
             const parsed: WSMessage = JSON.parse(event.data);
             messageHandlers.current.forEach(handler => {
@@ -38,7 +38,7 @@ export const WebSocketProvider = ({
       };
 
       ws.current.onclose = () => {
-        console.log("WebSocket disconnected");
+        // console.log("WebSocket disconnected");
       };
     }
 
@@ -50,12 +50,10 @@ export const WebSocketProvider = ({
 
   const onMessage = (callback: ( {event, data } : WSMessage) => void) => {
     messageHandlers.current.push(callback);
-    console.log("WebSocket message handler set.");
   };
 
   const removeHandler = (callback: ( {event, data } : WSMessage) => void) => {
     messageHandlers.current = messageHandlers.current.filter(h => h !== callback);
-    console.log("WebSocket message handler removed.");
   };
 
   const sendMessage = (msg: unknown) => {
