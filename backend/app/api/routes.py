@@ -9,7 +9,7 @@ from app.models.parking import Parking
 from app.models.zone import Zone
 from app.db.session import get_session
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
 import math
 
 from app.libs.connection_manager import connection_manager
@@ -76,6 +76,7 @@ async def get_logs(
         .limit(page_size)
     )
     logs = result.scalars().all()
+    print(f"Retrieved logs for page: {logs[0]}")
     
     has_previous = page > 1
     has_next = page < total_pages
@@ -259,4 +260,68 @@ async def get_parkings(session: AsyncSession = Depends(get_session)):
                 "ending_time": p.time
             } for p in parkings
         ]
+    }
+
+
+@router.get("/analysis")
+async def get_analysis(session: AsyncSession = Depends(get_session)):
+    zones_result = await session.execute(select(Zone))
+    zones = zones_result.scalars().all()
+    
+    total_slots = 0
+    occupied_slots = 0
+    
+    for zone in zones:
+        total_slots += zone.total_slots
+        if zone.boolean_list:
+            occupied_slots += sum(zone.boolean_list)
+    
+    available_slots = total_slots - occupied_slots
+    
+    from datetime import datetime, timedelta
+    
+    end_date = datetime.now().date()
+    start_date = end_date - timedelta(days=6)  
+    
+    logs_result = await session.execute(
+        select(Log)
+        .where(
+            and_(
+                Log.type == "park",
+                func.date(Log.date) >= start_date,
+                func.date(Log.date) <= end_date
+            )
+        )
+        .order_by(Log.date.desc())
+    )
+    logs = logs_result.scalars().all()
+    
+    car_data_dict = {}
+    
+    for i in range(7):
+        date = start_date + timedelta(days=i)
+        date_str = date.strftime("%d/%m")
+        car_data_dict[date_str] = 0
+    
+    for log in logs:
+        log_date = log.date.date()
+        date_str = log_date.strftime("%d/%m")
+        if date_str in car_data_dict:
+            car_data_dict[date_str] += 1
+    
+    car_data = [
+        {"date": date_str, "cars": count}
+        for date_str, count in car_data_dict.items()
+    ]
+    
+    car_data.sort(key=lambda x: datetime.strptime(x["date"], "%d/%m"))
+
+    return {
+        "pieData": {
+            "availableSlots": available_slots,
+            "totalSlots": total_slots
+        },
+        "barData": {
+            "carData": car_data
+        }
     }

@@ -6,11 +6,12 @@ import ZoneInfo from '../components/ZoneInfo';
 import LogsList from '../components/LogList';
 import axios from 'axios';
 import React, { useEffect } from 'react';
-import type { ZoneInfoType } from '../libs/ApiTypes';
+import type { LogItem, ZoneInfoType } from '../libs/ApiTypes';
 import SlotTile from '../components/SlotTile';
 import type { SocketParkingStatus, WSMessage } from '../libs/HookTypes';
 import useWebSocket from '../hooks/useWebSocket';
 import { validZones } from '../libs/constValues';
+import LoadingComp from '../components/LoadingComp';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -18,6 +19,26 @@ const ZoneScreen: React.FC = () => {
     const { zoneId } = useParams<{ zoneId: string }>();
     const [ zoneInfo, setZoneInfo] = React.useState<ZoneInfoType | null>(null);
     const { onMessage, removeHandler } = useWebSocket();
+    const [ isLoading, setIsLoading] = React.useState(true);
+
+    const [ logsList, setLogsList] = React.useState<LogItem[]>([]);
+
+
+    useEffect(() => {
+        const fetchLogs = async () => {
+            try {
+                const response = await axios.get(`${apiUrl}/log/?zone=${zoneId}&page=1&page_size=6`);
+                const data = response.data;
+                console.log("Logs fetched:", data.logs );
+                setLogsList(data.logs);
+            } catch (error) {
+                console.error("Error fetching logs:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchLogs();
+    }, [ zoneId ]);
 
     useEffect(()=> {
         const fetchZoneInfo = async () => {
@@ -27,6 +48,8 @@ const ZoneScreen: React.FC = () => {
                 console.log("Slots", response.data.slots);
             } catch (error) {
                 console.error("Error fetching zone info:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchZoneInfo();
@@ -34,33 +57,27 @@ const ZoneScreen: React.FC = () => {
 
 
     useEffect(() => {
-         const handler = ( {event, data}: WSMessage ) => {
+        const handler = ( {event, data}: WSMessage ) => {
             if (event === "parking-" + zoneId) {
                 const parkingData = data as SocketParkingStatus;
                 console.log("Parking Data Received:", parkingData);
                 setZoneInfo(prev => {
                     if (prev) {
                         const updatedSlots = [...prev.slots];
-                        // console.log(updatedSlots)
                         updatedSlots[parkingData.slot - 1] = parkingData.status;
-                        // console.log("Updated Slots:", updatedSlots);
-                        return { 
-                            ...prev, 
-                            slots: updatedSlots 
-                        };
+                        return {  ...prev,  slots: updatedSlots };
                     }
                     return prev;
                 });
-            }};
-        console.log("Added onMessage inside zoneScreen.");
+            }
+        };
         onMessage(handler);
 
         return () => removeHandler(handler);
     }, [zoneId, onMessage, removeHandler]);
 
-    if ( !zoneId || !Object.keys(validZones).includes(zoneId) ) {
-        return <Page404 />;
-    } 
+    if ( !zoneId || !Object.keys(validZones).includes(zoneId) )  return <Page404 />;
+    if ( isLoading ) return <LoadingComp />;
 
     if ( !zoneInfo ) {
         return (
@@ -88,7 +105,7 @@ const ZoneScreen: React.FC = () => {
                 )) }
             </div>
             <ZoneInfo {...zoneInfo}/>
-            <LogsList />
+            <LogsList hasMore zone_id={ zoneInfo.zone_id ? zoneInfo.zone_id : "hello" } logs={logsList || []}/>
             <div className='flex-1'></div>
         </div>
     );

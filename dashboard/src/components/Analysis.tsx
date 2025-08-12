@@ -4,17 +4,9 @@ import {
   Tooltip, ResponsiveContainer, Label
 } from 'recharts';
 import PieChartComp from './PieChartComp';
+import type { AnalysisProps } from '../libs/PropTypes';
 
-const Analysis: React.FC = () => {
-  // Example data for pie chart
-  const totalSlots = 8;
-  const availableSlots = 5;
-  const usedSlots = totalSlots - availableSlots;
-
-  const slotData = [
-    { name: 'Available', value: availableSlots },
-    { name: 'Used', value: usedSlots },
-  ];
+const Analysis: React.FC<AnalysisProps> = ({ pieData }: AnalysisProps) => {
 
   // Example data for bar chart
   const carData = [
@@ -29,7 +21,7 @@ const Analysis: React.FC = () => {
   return (
     <div className="p-3 px-0 text-white rounded-2xl shadow-2xl space-y-2 max-w-[80vw]">
         <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
-          <PieChartComp slotData={slotData} availableSlots={availableSlots} totalSlots={totalSlots} />
+          <PieChartComp availableSlots={pieData?.availableSlots || 10} totalSlots={pieData?.totalSlots || 7} />
 
           {/* Bar Chart */}
           <div className="bg-white/5 p-6 rounded-xl backdrop-blur-md shadow-lg">

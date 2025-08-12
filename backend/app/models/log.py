@@ -11,3 +11,8 @@ class Log(Base):
     time = Column(DateTime, default=datetime.now(), nullable=False)
     zone = Column(String, nullable=False, index=True)
     slot = Column(String, nullable=False, index=True)
+
+
+    def __str__(self):
+        return f"Log[{self.type}, {self.date}, {self.time}, {self.zone}, {self.slot}]"
+    
