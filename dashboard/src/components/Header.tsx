@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   
   const location = useLocation();
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [ isOpen, setIsOpen ] = React.useState(false);
   const { isLoggedIn, login, logout, isLoading } = useAuth();
   
   useEffect(() => {
@@ -28,8 +28,18 @@ const Header: React.FC<HeaderProps> = ({
     }
   }, [location]);
 
-
-  console.log(isLoggedIn, isLoading);
+  const hanldeLogin = async (parkingId: number) => {
+    if (isLoading) return;
+    try {
+      login(parkingId);
+      console.log("Login successful with parking ID:", parkingId);
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Login failed. Please try again.");
+    } finally {
+      setIsOpen(false);
+    }
+  };
 
 
   const modal = (
@@ -37,10 +47,7 @@ const Header: React.FC<HeaderProps> = ({
          { isLoading && <LoadingComp shortened/> }
 
          { !isLoading && <EnterForm 
-            onSubmit={(parkingId: number)=>{
-              login(parkingId);
-            }} 
-              onClose={()=>{}}
+            onSubmit={hanldeLogin} 
             />
           }
       </Modal>

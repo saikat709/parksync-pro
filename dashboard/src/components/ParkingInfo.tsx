@@ -22,7 +22,7 @@ const ParkingInfo: React.FC<ParkingInfoProps> = ({ totalSlots, availableSlots, a
       colorClass: 'bg-gradient-to-tr from-purple-500 to-indigo-600',
     },
     {
-      title: 'Occupied / Total',
+      title: 'Available / Total',
       value: `${availableSlots || 0} / ${totalSlots || 0}`,
       description: `total slots ${totalSlots || 0}`,
       colorClass: 'bg-gradient-to-tr from-green-400 to-teal-500',

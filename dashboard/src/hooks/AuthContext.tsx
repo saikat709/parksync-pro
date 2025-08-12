@@ -14,32 +14,39 @@ export const AuthContextProvider = ({
   children,
 }: { children: ReactNode }) => {
 
-    const [parking, setParking] = useState<ParkingInfoType|null>(null);
+    const [parking, setParking] = useState<ParkingInfoType | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [errorCallback, setErrorCallback] = useState<((msg: string) => void) | null>(null);
 
     useEffect(() => {
-        const localParkingInfo = localStorage.getItem("parkingInfo");
-        if (localParkingInfo) {
-          console.log("Found parking info in localStorage:", localParkingInfo);
-          setIsLoggedIn(true);
-        } else {
-          setIsLoggedIn(false);
-        }
+        const fetchParkingInfo = async () => {
+          const localParkingInfo = localStorage.getItem("parkingInfo");
+          if (localParkingInfo) {
+            const parkingData = await JSON.parse(localParkingInfo);
+            const parkingParsed: ParkingInfoType = parkingData.parkingData as ParkingInfoType;
+            setParking(parkingParsed);
+            setIsLoggedIn(true);
+          } else {
+            setIsLoggedIn(false);
+          }
+        };
+        fetchParkingInfo();
     }, []);
 
     const login = async ( parkingId: number ) => {
         setIsLoading(true);
         console.log(`Logging in with parking ID: ${parkingId}`);
-
         try {
           const res = await axios.get(`${apiUrl}/parking/${parkingId}`);
 
           if ( res.status === 200 ) {
             const parkingData = res.data as ParkingInfoType;
             setParking(parkingData);
-            localStorage.setItem("parkingInfo", JSON.stringify(parkingData));
+            console.log("Login successful, parking data:", parkingData);
+            localStorage.setItem("parkingInfo", JSON.stringify({
+              "parkingData": parkingData
+            }));
             setIsLoggedIn(true);
           } else {
             throw new Error("Login failed");
@@ -48,7 +55,6 @@ export const AuthContextProvider = ({
         } catch (error) {
           console.error("Error during login:", error);
           if ( errorCallback ) errorCallback((error as Error).message);
-
         } finally {
           setIsLoading(false);
         }

@@ -29,7 +29,7 @@ const Layout = () => {
                         bg-gradient-to-br from-gray-900 to-black"
                         >
             <Header title="ParkSync.Pro" />
-            <div className="mx-auto w-[80vw]">
+            <div className="mx-auto w-full md:w-[80vw]">
                 <Outlet />
             </div>
            { isLoggedIn && <PersonalParking />}

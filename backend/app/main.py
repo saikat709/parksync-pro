@@ -1,9 +1,9 @@
 from fastapi import FastAPI
-from app.api import routes, zone_routes
+from app.api import routes, zone_routes, parking_routes
 from app.models.item import Base
 from app.db.session import engine
 from fastapi.middleware.cors import CORSMiddleware
-from app.libs.socket import socket_route    
+from app.libs.socket import socket_route  
 
 app = FastAPI(
     title="ParkSync.Pro Backend",
@@ -27,6 +27,7 @@ app.add_middleware(
 
 app.include_router(routes.router)
 app.include_router(zone_routes.router)
+app.include_router(parking_routes.router)
 app.include_router(socket_route)
 
 @app.on_event("startup")

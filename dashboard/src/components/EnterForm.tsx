@@ -1,6 +1,11 @@
 import React from "react";
 
-const EnterForm = ({onClose, onSubmit}) => {
+type EnterFormProps = {
+    onClose?: () => void;
+    onSubmit: (parkingId: number) => void;
+}
+
+const EnterForm : React.FC<EnterFormProps> = ({onSubmit}: EnterFormProps) => {
 
     const [error, setError ] = React.useState<string| null>(null);
 

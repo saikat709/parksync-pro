@@ -2,6 +2,7 @@ import React from 'react';
 import type { LogsListProps } from '../libs/ApiTypes';
 import { Link } from 'react-router-dom';
 import { typeColors } from '../libs/constValues';
+import { getDateString, getTimeString, pyDateToJsDate } from '../utils/datetime';
 
 const LogsList: React.FC<LogsListProps> = ({ hasMore, zone_id, logs }: LogsListProps) => {
   
@@ -34,10 +35,9 @@ const LogsList: React.FC<LogsListProps> = ({ hasMore, zone_id, logs }: LogsListP
 
         { logs && logs.map(({ type, date, zone, slot }, idx) => {
           
-          const dateObj = new Date(date.slice(0, 23));
+          console.log("Date conversion: ", getTimeString(pyDateToJsDate(date) || new Date()));
 
-          const datePart = dateObj.toLocaleDateString("en-GB"); 
-          const timePart = dateObj.toLocaleTimeString("en-GB", { hour12: false });
+          const dateObj = pyDateToJsDate(date);
 
 
           return ( <li key={idx} className="py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center px-2 hover:bg-white/10 transition-colors duration-300">
@@ -45,10 +45,10 @@ const LogsList: React.FC<LogsListProps> = ({ hasMore, zone_id, logs }: LogsListP
                 {type}
             </div>
             <div className="text-sm text-gray-300 sm:text-center min-w-[20%]">
-                {datePart}
+                {getDateString(dateObj || new Date())}
             </div>
             <div className='text-sm text-gray-300 sm:text-center min-w-[20%]'>
-                {timePart}
+                {getTimeString(dateObj || new Date())}
             </div>
             <div className='text-sm text-gray-300 sm:text-center min-w-[20%]'>
                 {slot }

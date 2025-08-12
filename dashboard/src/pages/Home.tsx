@@ -8,6 +8,7 @@ import type { LogItem, OverallDataType } from "../libs/ApiTypes";
 import axios from "axios";
 import LoadingComp from "../components/LoadingComp";
 import type { AnalysisDataType } from "../libs/PropTypes";
+import Modal from "../components/Modal";
 
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -36,7 +37,7 @@ const Home = () => {
 
                 const overallResponse = await axios.get(`${apiUrl}/overall`);
                 setOverallData(overallResponse.data);
-                console.log("Overall Data:", overallResponse.data);
+                // console.log("Overall Data:", overallResponse.data);
 
             } catch (error) {
                 console.error("Error fetching logs:", error);

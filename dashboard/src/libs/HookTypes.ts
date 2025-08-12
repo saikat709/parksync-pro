@@ -27,10 +27,13 @@ interface SocketParkingStatus {
 
 interface ParkingInfoType {
   zone_id?: string;
+  parking_id?: number;
   slot: number;
-  start_time: string;
-  zone: string,
+  starting_time: string;
   fare_rate?: number;
+  fare?: number;
+  zone_name?: string;
+  ending_time?: string;
 }
 
 
