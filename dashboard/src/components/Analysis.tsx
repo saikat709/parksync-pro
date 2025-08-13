@@ -9,7 +9,7 @@ import type { AnalysisProps } from '../libs/PropTypes';
 const Analysis: React.FC<AnalysisProps> = ({ pieData, barData }: AnalysisProps) => {
 
   return (
-    <div className="p-3 px-0 text-white rounded-2xl shadow-2xl space-y-2 max-w-[80vw]">
+    <div className="p-3 px-0 text-white rounded-2xl shadow-2xl space-y-2 max-w-[80vw] mx-auto">
         <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
           <PieChartComp availableSlots={pieData?.availableSlots || 10} totalSlots={pieData?.totalSlots || 7} />
 

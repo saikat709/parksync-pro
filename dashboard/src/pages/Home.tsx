@@ -8,7 +8,6 @@ import type { LogItem, OverallDataType } from "../libs/ApiTypes";
 import axios from "axios";
 import LoadingComp from "../components/LoadingComp";
 import type { AnalysisDataType } from "../libs/PropTypes";
-import Modal from "../components/Modal";
 
 
 const apiUrl = import.meta.env.VITE_API_URL;
@@ -53,7 +52,7 @@ const Home = () => {
     // console.log("Analysis Data:", analysisData?.barData);
     
     return (
-        <div className="flex-1 w-[100%]">
+        <div className="flex-1 w-[100%] mx-auto">
             <Analysis pieData={analysisData?.pieData} barData={analysisData?.barData} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 justify-between items-top px-4 py-3 mx-auto">
               <ParkingInfo 

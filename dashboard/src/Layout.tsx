@@ -25,7 +25,7 @@ const Layout = () => {
     return (
         <>
         <div
-            className="flex flex-col justify-between items-center gap-2 min-w-screen min-h-screen
+            className="flex flex-col justify-center items-center gap-2 min-w-screen min-h-screen
                         bg-gradient-to-br from-gray-900 to-black"
                         >
             <Header title="ParkSync.Pro" />

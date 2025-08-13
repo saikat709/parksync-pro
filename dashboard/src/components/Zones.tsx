@@ -46,13 +46,13 @@ const Zones: React.FC<ZoneProps> = ({totalSlots, availableSlots}: ZoneProps) => 
 
 
   return (
-    <section className="px-0 py-2 mb-2" id='zones'>
+    <section className="px-0 py-2 mb-2 mx-auto" id='zones'>
       <h1 className="text-md md:text-2xl font-bold mb-3
                      hover:drop-shadow-[0_0_8px_rgba(255,99,255,0.5)] 
                      transition-shadow duration-300 cursor-default">
         Parking Zones
       </h1>
-      <div className="flex flex-wrap gap-3 justify-left">
+      <div className="flex flex-wrap gap-3 justify-left mx-auto">
         {zones.map(({ disabled, ...tile }, idx) => (
           <Tile
             key={idx}

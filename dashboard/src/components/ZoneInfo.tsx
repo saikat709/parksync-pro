@@ -13,9 +13,9 @@ const ZoneInfo: React.FC<ZoneInfoType> = ({ total_slots, slots, fare }: ZoneInfo
 
     return (
         <div className="w-full mx-auto border-2 border-white p-3 grid grid-cols-1 items-center justify-center md:grid-cols-2 rounded-lg">
-            <div className="p-3 w-full h-full gap-2 flex flex-col justify-start items-start mb-6">
-                <h1 className='text-xl font-bold mb-3 mt-5'>Information</h1>
-                <div className="flex-1"> </div>
+            <div className="p-3 w-full h-full gap-2 flex flex-col justify-start items-start mb-2 md:mb-6">
+                <h1 className='text-xl font-bold mb-1 md:mb-3 md:mt-5'>Information</h1>
+                <div className="flex-1 md:block hidden"> </div>
                 <code>
                     <h1 className='text-md font-bold mb-3'> <pre>Total Slots     : {total_slots || 0} </pre> </h1>
                     <h1 className='text-md font-bold mb-3'> <pre>Available Slots : {total_slots - slots.filter(v => v).length }  </pre> </h1>
