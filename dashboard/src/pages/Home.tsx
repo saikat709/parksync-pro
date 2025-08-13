@@ -63,7 +63,9 @@ const Home = () => {
                 />
               <Zones totalSlots={overallData?.zone_a1?.total_slots} availableSlots={overallData?.zone_a1?.available_slots}/>
             </div>
-            <LogsList hasMore logs={logsList}/>
+            <div className="mx-5">
+                <LogsList hasMore logs={logsList}/>
+            </div>
         </div>
     );
 }

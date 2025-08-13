@@ -24,7 +24,7 @@ const ZoneInfo: React.FC<ZoneInfoType> = ({ total_slots, slots, fare }: ZoneInfo
                     <p className="text-sm text-gray-400">Please refresh for ensuring updates.</p>
                 </code>
             </div>
-            <PieChartComp slotData={slotData} availableSlots={7} totalSlots={10} />
+            <PieChartComp slotData={slotData} availableSlots={slots.map(a => a == true).length} totalSlots={total_slots} />
         </div>
     )
 }

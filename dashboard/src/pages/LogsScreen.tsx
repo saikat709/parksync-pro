@@ -5,6 +5,8 @@ import React, { useEffect } from "react";
 import LoadingComp from "../components/LoadingComp";
 import type { LogItem } from "../libs/ApiTypes";
 import axios from "axios";
+import useWebSocket from "../hooks/useWebSocket";
+import type { WSMessage } from "../libs/HookTypes";
 
 const getPaginationRange = (current: number, total: number) => {
     const visible = 5;
@@ -21,13 +23,13 @@ const getPaginationRange = (current: number, total: number) => {
         start = Math.max(1, end - visible + 1);
     }
 
-    console.log("Pagination Range:", { start, end, total }, (end < total));
+    // console.log("Pagination Range:", { start, end, total }, (end < total));
 
     if ( end % 5 === 0 && end < total) {
-        console.log("Adjusting pagination range for next page");
+        // console.log("Adjusting pagination range for next page");
         end += 1;
         start += 1;
-        console.log("Pagination Range:", { start, end, total }, (end < total));
+        // console.log("Pagination Range:", { start, end, total }, (end < total));
     }
 
     return { start, end };
@@ -38,6 +40,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 const LogsScreen: React.FC = () => {
     const navigate = useNavigate();
+    const { onMessage, removeHandler } = useWebSocket();
     const [searchParams] = useSearchParams();
     const zone_id = searchParams.get('zone_id');
     const [ isLoading, setIsLoading] = React.useState(true);
@@ -50,7 +53,7 @@ const LogsScreen: React.FC = () => {
     });
     const [ logsList, setLogsList] = React.useState<LogItem[]>([]);
 
-    console.log("Zone ID from query params:", zone_id);
+    // console.log("Zone ID from query params:", zone_id);
     const { start, end } = getPaginationRange(paginationInfo.currentPage, paginationInfo.totalPages);
 
     useEffect(() => {
@@ -58,7 +61,7 @@ const LogsScreen: React.FC = () => {
             try {
                 const response = await axios.get(`${apiUrl}/log/?zone=${zone_id}&page=1&page_size=10`);
                 const data = response.data;
-                console.log("Logs fetched:", data.logs );
+                // console.log("Logs fetched:", data.logs );
                 setPaginationInfo({
                     ...paginationInfo,
                     currentPage: data.currentPage,
@@ -75,6 +78,25 @@ const LogsScreen: React.FC = () => {
         };
         fetchLogs();
     }, [currentPage, zone_id]);
+
+    useEffect(() => {
+        const handler = ( {event, data}: WSMessage ) => {
+            console.log("WebSocket event received:", event, data);
+            if (event === "log-" + zone_id) {
+                const logData = data as LogItem;
+                console.log("Log Data Received:", logData);
+                setLogsList(prevLogs => {
+                    return [
+                        logData, 
+                        ...prevLogs.slice(0, prevLogs.length - 1)
+                    ]
+                });
+            }
+        };
+        onMessage(handler);
+        console.log("WebSocket onMessage handler added for logs");
+        return () => removeHandler(handler);
+    }, []);
 
     if ( isLoading ) return <LoadingComp />;
 

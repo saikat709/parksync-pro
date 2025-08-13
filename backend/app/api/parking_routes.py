@@ -9,7 +9,9 @@ from app.models.log import Log
 from app.db.session import get_session
 from pydantic import BaseModel
 from datetime import datetime
-from app.libs.connection_manager import connection_manager
+from app.libs.connection_manager import ConnectionManager
+
+connection_manager = ConnectionManager.get_instance()
 
 router = APIRouter()
 
@@ -71,6 +73,7 @@ async def start_parking(
         await session.refresh(zone)
 
         print(f"\nparking-{zone.zone_id} has been broadcasted with slot {new_parking.slot} and status 1")
+
         await connection_manager.broadcast("parking-" + zone.zone_id, {
             "slot": new_parking.slot,
             "status": 1
@@ -122,10 +125,11 @@ async def end_parking(
 
     end_time = datetime.now()
     active_parking.time = end_time
-    duration_minutes = int((end_time - active_parking.starting_time).total_seconds() / 60)
-    fare_rate = getattr(zone, "fare", 10) or 10
-    # ! or max(fare_rate, int(duration_minutes * (fare_rate / 60)))
-    total_fare = fare_rate*duration_minutes
+    duration_seconds = int((end_time - active_parking.starting_time).total_seconds())
+    fare_rate_per_hour = getattr(zone, "fare", 10) or 10
+    # Calculate fare per second: hourly rate / 3600 seconds per hour
+    fare_rate_per_second = fare_rate_per_hour / 60
+    total_fare = duration_seconds * fare_rate_per_second
 
     active_parking.fare = total_fare
 
@@ -160,7 +164,7 @@ async def end_parking(
     return {
         # "zone_id": active_parking.zone_id,
         # "slot": active_parking.slot,
-        # "duration_minutes": duration_minutes,
+        # "duration_seconds": duration_seconds,
         "fare": total_fare
     }
 

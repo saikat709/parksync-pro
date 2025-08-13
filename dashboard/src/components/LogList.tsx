@@ -26,7 +26,7 @@ const LogsList: React.FC<LogsListProps> = ({ hasMore, zone_id, logs }: LogsListP
               <div className={`font-semibold uppercase tracking-wide text-xs sm:text-sm flex-shrink-0 w-[18%] sm:w-[20%]`}>Type</div>
               <div className="font-semibold text-xs sm:text-sm uppercase tracking-wide text-center flex-shrink-0 w-[18%] sm:w-[20%]">Date</div>
               <div className='font-semibold text-xs sm:text-sm uppercase tracking-wide text-center flex-shrink-0 w-[18%] sm:w-[20%]'>Time</div>
-              <div className='font-semibold text-xs sm:text-sm uppercase tracking-wide text-center flex-shrink-0 w-[16%] sm:w-[10%]'>Slot</div>
+              {/* <div className='font-semibold text-xs sm:text-sm uppercase tracking-wide text-center flex-shrink-0 w-[16%] sm:w-[10%]'>Slot</div> */}
               <div className='font-semibold text-xs sm:text-sm uppercase tracking-wide text-center flex-shrink-0 w-[18%] sm:w-[20%]'>Zone</div>
           </li>
 
@@ -36,7 +36,7 @@ const LogsList: React.FC<LogsListProps> = ({ hasMore, zone_id, logs }: LogsListP
 
         { logs && logs.map(({ type, date, zone, slot }, idx) => {
           
-          console.log("Date conversion: ", getTimeString(pyDateToJsDate(date) || new Date()));
+          // console.log("Date conversion: ", getTimeString(pyDateToJsDate(date) || new Date()));
 
           const dateObj = pyDateToJsDate(date);
 
@@ -52,9 +52,9 @@ const LogsList: React.FC<LogsListProps> = ({ hasMore, zone_id, logs }: LogsListP
             <div className='text-xs sm:text-sm text-gray-300 text-center flex-shrink-0 w-[18%] sm:w-[20%] truncate'>
                 {getTimeString(dateObj || new Date())}
             </div>
-            <div className='text-xs sm:text-sm text-gray-300 text-center flex-shrink-0 w-[16%] sm:w-[10%] truncate'>
+            {/* <div className='text-xs sm:text-sm text-gray-300 text-center flex-shrink-0 w-[16%] sm:w-[10%] truncate'>
                 {slot }
-            </div>
+            </div> */}
             <div className='text-xs sm:text-sm text-gray-300 text-center flex-shrink-0 w-[18%] sm:w-[20%] truncate'>
                 {zone }
             </div>

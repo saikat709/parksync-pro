@@ -29,7 +29,7 @@ const ZoneScreen: React.FC = () => {
             try {
                 const response = await axios.get(`${apiUrl}/log/?zone=${zoneId}&page=1&page_size=6`);
                 const data = response.data;
-                console.log("Logs fetched:", data.logs );
+                // console.log("Logs fetched:", data.logs );
                 setLogsList(data.logs);
             } catch (error) {
                 console.error("Error fetching logs:", error);
@@ -45,7 +45,7 @@ const ZoneScreen: React.FC = () => {
             try {
                 const response = await axios.get(`${apiUrl}/zone/${zoneId}`);
                 setZoneInfo(response.data);
-                console.log("Slots", response.data.slots);
+                // console.log("Slots", response.data.slots);
             } catch (error) {
                 console.error("Error fetching zone info:", error);
             } finally {

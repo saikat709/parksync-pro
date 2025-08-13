@@ -41,8 +41,8 @@ const ParkingInfo: React.FC<ParkingInfoProps> = ({ totalSlots, availableSlots, a
 
   return (
     <div>
-        <h1 className='w-full mr-auto text-lg md:text-2xl font-bold  hover:drop-shadow-[0_0_5px_4px_rgba(255,99,255,0.3)]'> Parking </h1>
-        <div className="flex flex-wrap gap-3 justify-left px-0 py-2">
+        <h1 className='w-full mr-auto text-lg md:text-2xl font-bold  hover:drop-shadow-[0_0_5px_4px_rgba(255,99,255,0.3)] text-center'> Parking ( All Zones ) </h1>
+        <div className="flex flex-wrap gap-3 justify-center md:justify-start px-0 py-2">
         
         {infoData.map((tile, idx) => (
             <Tile

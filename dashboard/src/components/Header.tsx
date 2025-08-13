@@ -57,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({
   return (
     <>
     <header
-        className="mt-4 sm:mt-6 w-[95%] max-w-4xl px-4 sm:px-3 py-3 rounded-full 
+        className="mt-4 sm:mt-6 w-[90%] max-w-4xl px-6 py-4 rounded-full 
             bg-white/10 backdrop-blur-md shadow-md border border-white/20 
             flex items-center justify-between 
             transition-shadow duration-300 

@@ -12,14 +12,16 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta
 import math
 
-from app.libs.connection_manager import connection_manager
+from app.libs.connection_manager import ConnectionManager
+
+connection_manager = ConnectionManager.get_instance()
 
 router = APIRouter()
 
 class LogCreateRequest(BaseModel):
-    type: str
-    zone: str
-    slot: int
+    log_type: str
+    zone_id: str
+    # slot: int
 
 @router.get("/")
 async def root():
@@ -30,7 +32,10 @@ async def root():
     print("\nRoot endpoint hit. Web Socket event triggered.")
     print(connection_manager.active_connections, "active connections\n")
 
-    return { "message": "My FastAPI application is running!" }
+    return { 
+        "message": "Welcome to the ParksSync API!",
+        "active_connections": len(connection_manager.active_connections)
+     }
 
 # @router.get("/esp32-test")
 # def esp32_test():
@@ -44,14 +49,26 @@ async def create_log(
     session: AsyncSession = Depends(get_session)
 ):
     new_log = Log(
-        type=log_request.type,
-        zone=log_request.zone,
-        slot=log_request.slot,
+        type=log_request.log_type,
+        zone=log_request.zone_id,
+        slot=0,  # Assuming slot is not used in this context
     )
     session.add(new_log)
     await session.commit()
     await session.refresh(new_log)
     print(f"Log created: {new_log}")
+
+    await connection_manager.broadcast("log-" + log_request.zone_id, {
+        "type": new_log.type,
+        "zone": new_log.zone,
+        "slot": new_log.slot,
+        "id": new_log.id,
+        "date": new_log.date.isoformat() if new_log.date else None,
+        "time": new_log.time.isoformat() if new_log.time else None,
+    })
+    print("\nRoot endpoint hit. Web Socket event triggered.")
+    print(connection_manager.active_connections, "active connections\n")
+
     return new_log
 
 
@@ -75,7 +92,6 @@ async def get_logs(
         .limit(page_size)
     )
     logs = result.scalars().all()
-    print(f"Retrieved logs for page: {logs[0]}")
     
     has_previous = page > 1
     has_next = page < total_pages

@@ -22,7 +22,7 @@ export const WebSocketProvider = ({
       };
 
       ws.current.onmessage = (event: MessageEvent) => {
-        // console.log("WebSocketContext onMessage:", event.data);
+        console.log("WebSocketContext onMessage:", event.data);
           try {
             const parsed: WSMessage = JSON.parse(event.data);
             messageHandlers.current.forEach(handler => {
@@ -38,7 +38,7 @@ export const WebSocketProvider = ({
       };
 
       ws.current.onclose = () => {
-        // console.log("WebSocket disconnected");
+        console.log("WebSocket disconnected");
       };
     }
 
@@ -50,6 +50,7 @@ export const WebSocketProvider = ({
 
   const onMessage = (callback: ( {event, data } : WSMessage) => void) => {
     messageHandlers.current.push(callback);
+    console.log("WebSocketContext onMessage handler added");
   };
 
   const removeHandler = (callback: ( {event, data } : WSMessage) => void) => {
