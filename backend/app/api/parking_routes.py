@@ -161,6 +161,12 @@ async def end_parking(
         "status": 0
     })
 
+
+    await connection_manager.broadcast("parking-id-" + str(parking_id), {
+        "ending_time": end_time.isoformat(),
+        "fare": total_fare,
+    })
+
     return {
         # "zone_id": active_parking.zone_id,
         # "slot": active_parking.slot,

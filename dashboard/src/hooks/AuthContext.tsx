@@ -71,9 +71,27 @@ export const AuthContextProvider = ({
         console.log("User logged out");
     };
 
+    const completeParking = (endTime: string, fare?: number) => {
+      setParking(prev => {
+        if (prev) {
+          return {
+            ...prev,
+            ending_time: endTime,
+            fare: fare ? fare : (
+              prev.fare_rate ? Math.floor((Date.parse(endTime) - Date.parse(prev.starting_time)) / 1000) * prev.fare_rate : 0
+            ), 
+          };
+        }
+        return null;
+  
+      });
+      localStorage.setItem("parkingInfo", JSON.stringify(parking));
+      console.log("Parking completed, updated parking info:", parking);
+    }
+
 
     return (
-        <AuthContext.Provider value={{ login, parking, isLoggedIn, logout, isLoading, onError }}>
+        <AuthContext.Provider value={{ login, parking, isLoggedIn, logout, isLoading, onError, completeParking }}>
         {children}
         </AuthContext.Provider>
     );

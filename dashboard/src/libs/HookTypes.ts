@@ -36,16 +36,15 @@ interface ParkingInfoType {
   ending_time?: string;
 }
 
-
 interface AuthContextType {
   login: (parkingId: number) => void;
   logout?: () => void;
   onError?: (callback: (msg: string) => void) => void;
+  completeParking: (ending_time: string, fare?: number ) => void;
   isLoggedIn?: boolean;
   isLoading?: boolean;
   parking: ParkingInfoType | null;
 }
-
 
 export type { 
   WSMessage, 

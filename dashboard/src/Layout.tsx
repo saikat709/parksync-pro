@@ -32,6 +32,7 @@ const Layout = () => {
             <div className="mx-auto w-full md:w-[80vw]">
                 <Outlet />
             </div>
+            <div className="flex-1"></div>
            { isLoggedIn && <PersonalParking />}
             <Footer />
         </div>
